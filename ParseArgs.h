@@ -20,7 +20,7 @@ public:
 };
 
 void usage(char * name){
-    char * version = "0.4";
+    char * version = "0.5";
 
     cerr << endl;
     cerr << "Prints percentage pileup in a given region for a given BAM file" << endl;
@@ -37,6 +37,8 @@ void usage(char * name){
     cerr << endl;
     cerr << "To manually check a pileup region, try:" << endl;
     cerr << " e.g. " << name << " myfile.bam chr2:123456-123457 --depth 27 --DEBUG" << endl;
+    cerr << endl;
+    cerr << "WARNING: make sure that a .bai index file is present, and that SAMTOOLS is installed" << endl;
     exit(0);
 }
 
