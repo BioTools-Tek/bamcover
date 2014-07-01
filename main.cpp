@@ -29,6 +29,8 @@ QList<LineHolder*> performPileup(QString bamfile, QString chrom, uint pos1, uint
     command.append(chrom).append(':').append(QString::number(pos1)+'-'+QString::number(pos2))\
             .append(' ').append(bamfile);
 
+    cerr << command.toUtf8().data() << endl;
+
     qp->start(command);
     qp->waitForFinished();
 
@@ -80,7 +82,7 @@ QList<LineHolder*> performPileup(QString bamfile, QString chrom, uint pos1, uint
         cout << "\nchrom\tpos\tdepth" << endl;
         cout << "======================" << endl;
         for (int l=0; l< results.length() ; l++)
-                cout << "chr" << results[l]->chrom.toUtf8().data() << '\t' << results[l]->position << '\t' << results[l]->depth << endl;
+                cout << results[l]->chrom.toUtf8().data() << '\t' << results[l]->position << '\t' << results[l]->depth << endl;
         exit(0);
     }
     return results;
@@ -89,10 +91,13 @@ QList<LineHolder*> performPileup(QString bamfile, QString chrom, uint pos1, uint
 
 void printBed(QString bamfile, QString chrom, uint pos1, uint pos2, int depth, bool keepchr, bool debug, QString name="")
 {
-    if (!keepchr) chrom = chrom.split("hr")[1];
+    //At this stage chrom should be a single number
+    if (keepchr) chrom = "chr"+chrom;
+
+    //DO PILEUP
     QList<LineHolder*> piles = performPileup(bamfile, chrom, pos1, pos2, debug);
 
-    chrom = ((chrom[1]=='h') && (chrom[2]=='r'))?chrom:"chr"+chrom;
+
 
     int length = piles.length();
     int above_depth=0;
@@ -157,15 +162,21 @@ void performPileupBed(QString bamfile, QString bedfile, int depth, bool keepchr,
                 if (line.length()>0){
                     QStringList tokens = line.split('\t');
 
-                    QString chrom = tokens[0]; //.split("chr")[0];
+                    QString chrom = tokens[0];
+                    if (chrom.startsWith("chr")) chrom = chrom.split("chr").last();
                     uint pos1 = tokens[1].toUInt();
                     uint pos2 = tokens[2].toUInt();
                     QString name = "   ";
                     if (tokens.length()>3) name = tokens[3];
 
 
-                    if (pos1>=pos2) continue; // Skip ambiguous or incorrectly ordered beds
+                    if (pos1>=pos2){
+                        cerr << "Skipping " << pos1 << "  " << pos2 << " line. Bad ordering." << endl;
+                        continue; // Skip ambiguous or incorrectly ordered beds
+                    }
 
+
+//                    cerr << "CHROM: " << chrom.toUtf8().data() << endl;
                     printBed(bamfile, chrom, pos1, pos2, depth, keepchr, debug, name);
                 }
             }
@@ -178,10 +189,10 @@ void performPileupBed(QString bamfile, QString bedfile, int depth, bool keepchr,
 int main(int argc, char *argv[])
 {
     ParseArgs *pa = new ParseArgs(argc, argv);
-    cerr << "opt:" << pa->optregion.toUtf8().data() << endl;
 
     if (pa->optregion!="") {
         QStringList chr_regs = pa->optregion.split(':');
+        if (chr_regs[0].startsWith("chr")) chr_regs[0] = chr_regs[0].split("chr").last();
         QStringList reg1_reg2 = chr_regs.at(1).split('-');
 
         printBed(pa->bamfile, chr_regs[0], reg1_reg2[0].toUInt(), reg1_reg2[1].toUInt(),pa->depth, pa->keepchr, pa->debug);
