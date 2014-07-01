@@ -29,7 +29,7 @@ QList<LineHolder*> performPileup(QString bamfile, QString chrom, uint pos1, uint
     command.append(chrom).append(':').append(QString::number(pos1)+'-'+QString::number(pos2))\
             .append(' ').append(bamfile);
 
-    cerr << command.toUtf8().data() << endl;
+//    cerr << command.toUtf8().data() << endl;
 
     qp->start(command);
     qp->waitForFinished();
@@ -114,7 +114,7 @@ void printBed(QString bamfile, QString chrom, uint pos1, uint pos2, int depth, b
         bool printing=false;
 
         if (pr->depth >= depth){
-//            cerr << pr->chrom.toUtf8().data() << " " << pr->position << "  " << pr->depth << endl;
+            //cerr << pr->chrom.toUtf8().data() << " " << pr->position << "  " << pr->depth << endl;
 
             if (!recording) {
                 recording = true;
@@ -133,6 +133,7 @@ void printBed(QString bamfile, QString chrom, uint pos1, uint pos2, int depth, b
             if (start_region_pos!=0) printing = true;
 
         if (printing){
+//            cerr << "DO I EVER GET HERE" << endl;
             QString complete = chrom+'\t'+QString::number(start_region_pos)+'\t'+QString::number(end_region_pos)+'\t'+name;
             if (last_print!=complete) cout << complete.toUtf8().data() << endl;
             last_print = complete;
@@ -142,7 +143,7 @@ void printBed(QString bamfile, QString chrom, uint pos1, uint pos2, int depth, b
     }
 
     cerr << chrom.toUtf8().data() << ':' << pos1 << '-' << pos2
-         << '\t' << name.toUtf8().data() << '\t' << ((100*above_depth)/length) << '%' << endl;
+         << '\t' << name.toUtf8().data() << '\t' << (100 * ((float)(above_depth))/length) << '%' << endl;
 }
 
 

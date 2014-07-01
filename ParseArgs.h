@@ -20,7 +20,7 @@ public:
 };
 
 void usage(char * name){
-    char * version = "0.5";
+    char * version = "0.6";
 
     cerr << endl;
     cerr << "Prints percentage pileup in a given region for a given BAM file" << endl;
